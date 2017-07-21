@@ -1,17 +1,32 @@
 var boardLineWidth = 8;
 var midLineWidth = 5;
 var boardPosition = [];
+var ballPosition = [];
 var speed = 0;
 var radius = 0;
+var largeradius = 0;
+var score = 0;
+var offleft = 0;
+var offtop = 0;
+var ballspeed = 0;
+var board_size = 0;
+var obBall = [];
 
 
 var main = document.getElementById('main');
+var count = document.getElementById('score');
+
 var board = document.getElementById('board');
 var board_context = board.getContext('2d');
+
 var myball = document.getElementById('ball');
 var myball_context = myball.getContext('2d');
+
 var myfruit = document.getElementById('fruit');
 var fruit_ctx = myfruit.getContext('2d');
+
+var ob = document.getElementById('obstacle');
+var ob_ctx = ob.getContext('2d');
 
 
 CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
@@ -38,6 +53,8 @@ CanvasRenderingContext2D.prototype.drawBoardLine = function(x, y, size, linewidt
 	this.closePath();
 	return this;
 };
+
+
 
 var ball = function(x = 1, y = 1) {
 	this.x = x;
@@ -103,6 +120,7 @@ ball.prototype = {
 };
 
 
+
 var fruit = function(index = 0) {
 	this.index = this.last = index;
 	this.r = boardPosition[this.index][0];
@@ -158,14 +176,124 @@ fruit.prototype = {
 
 };
 
+
+
+var obstacle = function(num) {
+	this.num = num;
+	this.or = this.r = ballPosition[num][0];
+	this.oc = this.c = ballPosition[num][1];
+	this.speedy = ballspeed * ballPosition[num][2];
+	this.speedx = ballspeed * ballPosition[num][3];
+	this.active = 0;
+
+};
+
+obstacle.prototype = {
+	constructor: obstacle,
+
+	draw: function() {
+		ob_ctx.beginPath();
+		ob_ctx.arc(this.r, this.c, largeradius, 0, Math.PI * 2, false);
+		ob_ctx.closePath();
+
+		ob_ctx.fillStyle = "#333333";
+		ob_ctx.fill();
+	},
+
+	isactive: function() {
+		if (this.num < 6 && this.num % 2 === 0) {
+			return this.c < offtop + board_size + largeradius;
+		} else if (this.num < 6) {
+			return this.c > offtop - largeradius;
+		} else if (this.num % 2 === 0) {
+			return this.r < offleft + board_size + largeradius;
+		} else {
+			return this.r > offleft - largeradius;
+		}
+	},
+
+	isselected: function() {
+		if (this.r + largeradius < 0 || this.r - largeradius > ob.width || this.c + largeradius < 0 || this.c - largeradius > ob.height) {
+			this.r = this.or;
+			this.c = this.oc;
+			return false;
+		}
+		return true;
+	},
+
+	move: function() {
+		this.r += this.speedx;
+		this.c += this.speedy;
+		this.draw();
+		this.active = this.isactive();
+	}
+};
+var getSum = function() {
+	let res = 0;
+	obBall.forEach(function(item, index) {
+		res += item.active;
+	});
+	return res;
+};
+
+var amount = 1;
+var select = [];
+var active = 0;
+var remainBall = function(stage) {
+	ob_ctx.clearRect(0, 0, ob.width, ob.height);
+	switch (stage) {
+		case 0:
+			while (select.length < amount) {
+				var index = Math.floor(Math.random() * 12);
+				obBall[index].active = 1;
+				select.push(index);
+			}
+			active = 0;
+			select.forEach(function(item, index) {
+				obBall[item].move();
+				if (!obBall[item].isselected()) {
+					select.splice(index, 1);
+				}
+			});
+			break;
+		case 3:
+			while (active < amount) {
+				var index = Math.floor(Math.random() * 12);
+				obBall[index].active = 1;
+				active++;
+				select.push(index);
+			}
+			active = 0;
+			select.forEach(function(item, index) {
+				obBall[item].move();
+				if (!obBall[item].isselected()) {
+					select.splice(index, 1);
+				}
+				if (obBall[item].active) {
+					active++;
+				}
+			});
+			break;
+
+		default:
+			break;
+	}
+};
+
+
 init_board = function(board, board_context) {
 	var board_size = window.innerWidth > window.innerHeight ? window.innerHeight / 3 : window.innerWidth / 3;
+	offleft = (window.innerWidth - board_size) / 2;
+	offtop = (window.innerHeight - board_size) / 2;
+	//console.log(offleft, offtop);
 	board.width = board_size;
 	board.height = board_size;
 	myball.width = board.width;
 	myball.height = board.height;
 	myfruit.width = board.width;
 	myfruit.height = board.height;
+	ob.width = window.innerWidth;
+	ob.height = window.innerHeight;
 
 	board_context.lineWidth = boardLineWidth;
 	board_context.strokeStyle = '#fde6d8';
@@ -180,32 +308,60 @@ init_board = function(board, board_context) {
 };
 
 var getData = function() {
-	var board_size = init_board(board, board_context);
+	board_size = init_board(board, board_context);
 	var block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
 	radius = block_size / 3;
+	largeradius = block_size / 2.7;
 	if (boardPosition !== []) {
 		boardPosition = [];
 	}
+	if (ballPosition !== []) {
+		ballPosition = [];
+	}
+	var flag = true;
 	for (var i = boardLineWidth + block_size / 2; i < board_size; i += block_size + midLineWidth) {
 		for (var j = boardLineWidth + block_size / 2; j < board_size; j += block_size + midLineWidth) {
 			boardPosition.push([j, i]);
+			if (flag) {
+				ballPosition.push([j + offleft, 0 - largeradius, 1, 0]);
+				ballPosition.push([j + offleft, ob.height + largeradius, -1, 0]);
+			}
 		}
+		flag = false;
+		ballPosition.push([0 - largeradius, i + offtop, 0, 1]);
+		ballPosition.push([ob.width + largeradius, i + offtop, 0, -1]);
+
 	}
 	speed = block_size / 3;
+	ballspeed = board_size / 30;
+	if (obBall !== []) {
+		obBall = [];
+	}
+	for (var i = 0; i < 12; i++) {
+		var tmp = new obstacle(i);
+		obBall.push(tmp);
+	}
 };
 
 getData();
+
+
 
 var mainball = new ball();
 mainball.draw();
 var mainfruit = new fruit();
 mainfruit.draw();
 
+
+
 var handler_size = function(event) {
 	getData();
 	mainball.clear();
 	mainball.setBall();
 	mainball.draw();
+	mainfruit.clear();
+	mainfruit.setData();
+	mainfruit.draw();
 	//console.log(window.innerWidth,board_size);
 };
 
@@ -232,12 +388,16 @@ window.onresize = handler_size;
 window.onkeydown = handler_ball;
 
 
+
 var main = function() {
 	mainball.move();
 	mainfruit.rotate();
+	remainBall(0);
 	if (mainball.r === mainfruit.r && mainball.c === mainfruit.c) {
 		mainfruit.generate();
+		score++;
 	}
+	count.textContent = score;
 };
 
 setInterval(main, 20);

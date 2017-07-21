@@ -10,6 +10,14 @@ body {
         height: 100%;
 }
 
+#score {
+        position: absolute;
+        z-index: 99;
+        left: 10%;
+        top: 10%;
+        font-size: 30px;
+}
+
 #main {
         display: flex;
         width: 100%;
@@ -29,10 +37,12 @@ body {
         z-index: 10;
 }
 
-#score {
+#obstacle {
         position: absolute;
-        z-index: 99;
-        left: 10%;
-        top: 10%;
-        font-size: 30px;
+        z-index: 15;
+}
+
+#fruit {
+		position:absolute;
+		z-index:8;
 }

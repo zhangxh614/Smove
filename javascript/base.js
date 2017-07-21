@@ -10,6 +10,8 @@ var board = document.getElementById('board');
 var board_context = board.getContext('2d');
 var myball = document.getElementById('ball');
 var myball_context = myball.getContext('2d');
+var myfruit = document.getElementById('fruit');
+var fruit_ctx = myfruit.getContext('2d');
 
 
 CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
@@ -48,8 +50,11 @@ var ball = function(x = 1, y = 1) {
 ball.prototype = {
 	constructor: ball,
 
-	draw: function() {
+	clear: function() {
 		myball_context.clearRect(0, 0, myball.width, myball.height);
+	},
+
+	draw: function() {
 		myball_context.beginPath();
 		myball_context.arc(this.r, this.c, radius, 0, Math.PI * 2, false);
 		myball_context.closePath();
@@ -77,6 +82,7 @@ ball.prototype = {
 		if (this.final_c === this.c && this.final_r === this.r) {
 			return;
 		}
+		this.clear(this.r, this.c);
 		if (this.final_c - this.c > this.speed) {
 			this.c += this.speed;
 		} else if (this.final_c - this.c < -speed) {
@@ -96,12 +102,70 @@ ball.prototype = {
 
 };
 
+
+var fruit = function(index = 0) {
+	this.index = this.last = index;
+	this.r = boardPosition[this.index][0];
+	this.c = boardPosition[this.index][1];
+	this.size = radius * Math.SQRT1_2;
+	this.speed = 1 * Math.PI / 180;
+	this.angle = 0;
+
+};
+
+fruit.prototype = {
+	constructor: fruit,
+
+	clear: function() {
+		fruit_ctx.clearRect(0, 0, myfruit.width, myfruit.height);
+	},
+
+	draw: function() {
+		fruit_ctx.drawBoard(this.r - this.size, this.c - this.size, this.size * 2, this.size / 2);
+		fruit_ctx.fillStyle = "#175fa4";
+		fruit_ctx.fill();
+
+	},
+
+	setData: function() {
+		fruit_ctx.translate(this.r, this.c);
+		fruit_ctx.rotate(-this.angle);
+		fruit_ctx.translate(-this.r, -this.c);
+		this.angle = 0;
+		this.r = boardPosition[this.index][0];
+		this.c = boardPosition[this.index][1];
+		this.size = radius * Math.SQRT1_2;
+		this.last = this.index;
+	},
+
+	generate: function() {
+		do {
+			this.index = Math.floor(Math.random() * 9);
+		} while (this.index === this.last);
+		this.setData();
+		this.draw();
+	},
+
+	rotate: function() {
+		this.clear();
+		fruit_ctx.translate(this.r, this.c);
+		fruit_ctx.rotate(this.speed);
+		fruit_ctx.translate(-this.r, -this.c);
+		this.draw();
+		this.angle += this.speed;
+	}
+
+
+};
+
 init_board = function(board, board_context) {
 	var board_size = window.innerWidth > window.innerHeight ? window.innerHeight / 3 : window.innerWidth / 3;
 	board.width = board_size;
 	board.height = board_size;
 	myball.width = board.width;
 	myball.height = board.height;
+	myfruit.width = board.width;
+	myfruit.height = board.height;
 
 	board_context.lineWidth = boardLineWidth;
 	board_context.strokeStyle = '#fde6d8';
@@ -134,9 +198,12 @@ getData();
 
 var mainball = new ball();
 mainball.draw();
+var mainfruit = new fruit();
+mainfruit.draw();
 
 var handler_size = function(event) {
 	getData();
+	mainball.clear();
 	mainball.setBall();
 	mainball.draw();
 	//console.log(window.innerWidth,board_size);
@@ -167,6 +234,10 @@ window.onkeydown = handler_ball;
 
 var main = function() {
 	mainball.move();
+	mainfruit.rotate();
+	if (mainball.r === mainfruit.r && mainball.c === mainfruit.c) {
+		mainfruit.generate();
+	}
 };
 
 setInterval(main, 20);

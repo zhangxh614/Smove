@@ -1,29 +1,49 @@
-// var canvas = document.getElementById("myCanvas");
-// var cxt = canvas.getContext("2d");
-// cxt.strokeStyle = "#ff8040";
-// cxt.fillStyle = "#0000ff";
-// cxt.arc(100,100,50,0,2*Math.PI,true);
-// cxt.fill();
-// cxt.strokeRect(30,20,100,150);
+CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
+	this.beginPath();
+	this.moveTo(x + r, y);
+	this.arcTo(x + size, y, x + size, y + size, r);
+	this.arcTo(x + size, y + size, x, y + size, r);
+	this.arcTo(x, y + size, x, y, r);
+	this.arcTo(x, y, x + size, y, r);
+	this.closePath();
+	return this;
+};
 
-// function resize(w,h)
-// {
-// var imgData = cxt.getImageData(0,0,canvas.width,canvas.height);
-// canvas.width = w;
-// canvas.height = h;
-// cxt.putImageData(imgData,0,0);
-// }
-function resize(width, height, canvas, context) {
-	var imgData = context.getImageData(0, 0, canvas.weight, canvas.height);
-	canvas.width = width;
+CanvasRenderingContext2D.prototype.drawBoardLine = function(x, y, size, linewidth) {
+	this.beginPath();
+	this.moveTo(x + size / 3, y + y + linewidth * 2);
+	this.lineTo(x + size / 3, size - linewidth * 2);
+	this.moveTo(x + size / 3 * 2, y + y + linewidth * 2);
+	this.lineTo(x + size / 3 * 2, size - linewidth * 2);
+	this.moveTo(x + x + linewidth * 2, y + size / 3);
+	this.lineTo(size - linewidth * 2, y + size / 3);
+	this.moveTo(x + x + linewidth * 2, y + size / 3 * 2);
+	this.lineTo(size - linewidth * 2, y + size / 3 * 2);
+	this.closePath();
+	return this;
+};
+
+
+function resize(sizeidth, height, canvas, context) {
+	var imgData = context.getImageData(0, 0, canvas.sizeeight, canvas.height);
+	canvas.sizeidth = sizeidth;
 	canvas.height = height;
 	context.putImageData(imgData, 0, 0);
 }
 
 var main = document.getElementById('main');
-var back=document.getElementById('back');
-var back_context=back.getContext('2d');
+var board = document.getElementById('board');
+var board_context = board.getContext('2d');
+board_size = main.clientWidth > main.clientHeight ? main.clientHeight / 3 : main.clientWidth / 3;
 
-back_context.strokeStyle='white';
-back_context.lineWidth=6;
-back_context.strokeRect(100,100,300,300);
+board.width = board_size;
+board.height = board_size;
+
+var boardLineWidth = board_context.lineWidth = 8;
+board_context.strokeStyle = '#fde6d8';
+board_context.drawBoard(boardLineWidth / 2, boardLineWidth / 2, board_size - boardLineWidth, board_size / 4);
+board_context.stroke();
+midLineWidth = board_context.lineWidth = 5;
+board_context.strokeStyle = '#f9cfb6';
+board_context.drawBoardLine(boardLineWidth / 2, boardLineWidth / 2, board_size - boardLineWidth, midLineWidth);
+board_context.stroke();

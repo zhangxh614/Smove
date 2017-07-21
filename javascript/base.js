@@ -23,27 +23,60 @@ CanvasRenderingContext2D.prototype.drawBoardLine = function(x, y, size, linewidt
 	return this;
 };
 
+var boardLineWidth = 8;
+var midLineWidth = 5;
 
-function resize(sizeidth, height, canvas, context) {
-	var imgData = context.getImageData(0, 0, canvas.sizeeight, canvas.height);
-	canvas.sizeidth = sizeidth;
-	canvas.height = height;
-	context.putImageData(imgData, 0, 0);
-}
+init_board = function(board, board_context) {
+	var board_size = window.innerWidth > window.innerHeight ? window.innerHeight / 3 : window.innerWidth / 3;
+	board.width = board_size;
+	board.height = board_size;
+
+	board_context.lineWidth = boardLineWidth;
+	board_context.strokeStyle = '#fde6d8';
+	board_context.drawBoard(boardLineWidth / 2, boardLineWidth / 2, board_size - boardLineWidth, board_size / 4);
+	board_context.stroke();
+
+	board_context.lineWidth = midLineWidth;
+	board_context.strokeStyle = '#f9cfb6';
+	board_context.drawBoardLine(boardLineWidth / 2, boardLineWidth / 2, board_size - boardLineWidth, midLineWidth);
+	board_context.stroke();
+	return board_size;
+};
 
 var main = document.getElementById('main');
 var board = document.getElementById('board');
 var board_context = board.getContext('2d');
-board_size = main.clientWidth > main.clientHeight ? main.clientHeight / 3 : main.clientWidth / 3;
+var myball = document.getElementById('ball');
+var myball_context = myball.getContext('2d');
 
-board.width = board_size;
-board.height = board_size;
+var board_size = init_board(board, board_context);
+var block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
+var radius = block_size / 3;
 
-var boardLineWidth = board_context.lineWidth = 8;
-board_context.strokeStyle = '#fde6d8';
-board_context.drawBoard(boardLineWidth / 2, boardLineWidth / 2, board_size - boardLineWidth, board_size / 4);
-board_context.stroke();
-midLineWidth = board_context.lineWidth = 5;
-board_context.strokeStyle = '#f9cfb6';
-board_context.drawBoardLine(boardLineWidth / 2, boardLineWidth / 2, board_size - boardLineWidth, midLineWidth);
-board_context.stroke();
+var handler_size = function(event) {
+	board_size = init_board(board, board_context);
+	block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
+	//console.log(window.innerWidth,board_size);
+};
+
+window.onresize = handler_size;
+
+init_myball = function() {
+	myball.width = board.width;
+	myball.height = board.height;
+
+	myball_context.beginPath();
+	myball_context.arc(board_size / 2, board_size / 2, radius, 0, Math.PI * 2, false);
+	myball_context.closePath();
+
+	myball_context.fillStyle = "white";
+	myball_context.fill();
+};
+
+init_myball();
+
+// var main = function() {
+// //var size = init_board(board, board_context);
+// };
+
+// setInterval(main, 20);

@@ -1,3 +1,17 @@
+var boardLineWidth = 8;
+var midLineWidth = 5;
+var boardPosition = [];
+var speed = 0;
+var radius = 0;
+
+
+var main = document.getElementById('main');
+var board = document.getElementById('board');
+var board_context = board.getContext('2d');
+var myball = document.getElementById('ball');
+var myball_context = myball.getContext('2d');
+
+
 CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
 	this.beginPath();
 	this.moveTo(x + r, y);
@@ -23,13 +37,71 @@ CanvasRenderingContext2D.prototype.drawBoardLine = function(x, y, size, linewidt
 	return this;
 };
 
-var boardLineWidth = 8;
-var midLineWidth = 5;
+var ball = function(x = 1, y = 1) {
+	this.x = x;
+	this.y = y;
+	this.final_r = this.r = boardPosition[this.x * 3 + this.y][0];
+	this.final_c = this.c = boardPosition[this.x * 3 + this.y][1];
+	this.speed = speed;
+};
+
+ball.prototype = {
+	constructor: ball,
+
+	draw: function() {
+		myball_context.clearRect(0, 0, myball.width, myball.height);
+		myball_context.beginPath();
+		myball_context.arc(this.r, this.c, radius, 0, Math.PI * 2, false);
+		myball_context.closePath();
+
+		myball_context.fillStyle = "white";
+		myball_context.fill();
+	},
+
+	update: function(x, y) {
+		if (this.x + x >= 0 && this.x + x <= 2 && this.y + y >= 0 && this.y + y <= 2) {
+			this.x = this.x + x;
+			this.y = this.y + y;
+			this.final_r = boardPosition[this.x * 3 + this.y][0];
+			this.final_c = boardPosition[this.x * 3 + this.y][1];
+		}
+	},
+
+	setBall: function() {
+		this.final_r = this.r = boardPosition[this.x * 3 + this.y][0];
+		this.final_c = this.c = boardPosition[this.x * 3 + this.y][1];
+		this.speed = speed;
+	},
+
+	move: function() {
+		if (this.final_c === this.c && this.final_r === this.r) {
+			return;
+		}
+		if (this.final_c - this.c > this.speed) {
+			this.c += this.speed;
+		} else if (this.final_c - this.c < -speed) {
+			this.c -= this.speed;
+		} else {
+			this.c = this.final_c;
+		}
+		if (this.final_r - this.r > this.speed) {
+			this.r += this.speed;
+		} else if (this.final_r - this.r < -speed) {
+			this.r -= this.speed;
+		} else {
+			this.r = this.final_r;
+		}
+		this.draw();
+	}
+
+};
 
 init_board = function(board, board_context) {
 	var board_size = window.innerWidth > window.innerHeight ? window.innerHeight / 3 : window.innerWidth / 3;
 	board.width = board_size;
 	board.height = board_size;
+	myball.width = board.width;
+	myball.height = board.height;
 
 	board_context.lineWidth = boardLineWidth;
 	board_context.strokeStyle = '#fde6d8';
@@ -43,40 +115,58 @@ init_board = function(board, board_context) {
 	return board_size;
 };
 
-var main = document.getElementById('main');
-var board = document.getElementById('board');
-var board_context = board.getContext('2d');
-var myball = document.getElementById('ball');
-var myball_context = myball.getContext('2d');
+var getData = function() {
+	var board_size = init_board(board, board_context);
+	var block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
+	radius = block_size / 3;
+	if (boardPosition !== []) {
+		boardPosition = [];
+	}
+	for (var i = boardLineWidth + block_size / 2; i < board_size; i += block_size + midLineWidth) {
+		for (var j = boardLineWidth + block_size / 2; j < board_size; j += block_size + midLineWidth) {
+			boardPosition.push([j, i]);
+		}
+	}
+	speed = block_size / 3;
+};
 
-var board_size = init_board(board, board_context);
-var block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
-var radius = block_size / 3;
+getData();
+
+var mainball = new ball();
+mainball.draw();
 
 var handler_size = function(event) {
-	board_size = init_board(board, board_context);
-	block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
+	getData();
+	mainball.setBall();
+	mainball.draw();
 	//console.log(window.innerWidth,board_size);
 };
 
-window.onresize = handler_size;
-
-init_myball = function() {
-	myball.width = board.width;
-	myball.height = board.height;
-
-	myball_context.beginPath();
-	myball_context.arc(board_size / 2, board_size / 2, radius, 0, Math.PI * 2, false);
-	myball_context.closePath();
-
-	myball_context.fillStyle = "white";
-	myball_context.fill();
+var handler_ball = function(event) {
+	switch (event.keyCode) {
+		case 38:
+			mainball.update(-1, 0);
+			break;
+		case 37:
+			mainball.update(0, -1);
+			break;
+		case 40:
+			mainball.update(1, 0);
+			break;
+		case 39:
+			mainball.update(0, 1);
+			break;
+		default:
+			break;
+	}
 };
 
-init_myball();
+window.onresize = handler_size;
+window.onkeydown = handler_ball;
 
-// var main = function() {
-// //var size = init_board(board, board_context);
-// };
 
-// setInterval(main, 20);
+var main = function() {
+	mainball.move();
+};
+
+setInterval(main, 20);

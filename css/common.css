@@ -25,12 +25,14 @@ body {
 
 #main {
         display: flex;
+		overflow:hidden;
         width: 100%;
         height: 100%;
         align-items: center;
         justify-content: center;
         background-color: #faaa79;
         transform: none;
+        touch-action: none
 }
 
 #board {
@@ -77,4 +79,5 @@ body {
         border-radius: 50px;
         text-align: center;
         vertical-align: middle;
+        display: none;
 }

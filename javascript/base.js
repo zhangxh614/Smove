@@ -12,6 +12,12 @@ var ballspeed = 0;
 var board_size = 0;
 var obBall = [];
 var stageflag = 0; //0:start 1:during 2:end 3:changelevel
+var startX;
+var startY;
+var endX;
+var endY;
+var X;
+var Y;
 
 
 var maindiv = document.getElementById('main');
@@ -255,18 +261,18 @@ obstacle.prototype = {
 var amount = 2;
 var select = [];
 var active = 0;
-var method = [
-	[
-		[0, 5],
-		[1, 4],
-		[2, 3]
-	],
-	[
-		[6, 11],
-		[8, 9],
-		[10, 7]
-	]
-];
+// var method = [
+// [
+// [0, 5],
+// [1, 4],
+// [2, 3]
+// ],
+// [
+// [6, 11],
+// [8, 9],
+// [10, 7]
+// ]
+// ];
 
 var level = function() {
 	this.curopyacity = 0;
@@ -421,7 +427,7 @@ var startpart = function() {
 
 startpart.prototype.play = function() {
 	this.cur = this.cur + this.speed;
-	if (this.cur <= 0.2 || this.cur >= 1) {
+	if (this.cur <= 0.01 || this.cur >= 1) {
 		this.speed = -this.speed;
 	}
 	startp.style.opacity = this.cur;
@@ -430,6 +436,11 @@ startpart.prototype.play = function() {
 startpart.prototype.disappear = function() {
 	this.cur = 0;
 	startp.style.opacity = this.cur;
+};
+
+startpart.prototype.setData = function() {
+	this.speed = 0.01;
+	this.cur = 0.5;
 };
 
 
@@ -444,12 +455,15 @@ var endpart = function() {
 };
 
 endpart.prototype.setData = function(dx, dy) {
-	this.dx = dx;
-	this.dy = dy;
-	this.cur = 0;
+	this.curangle = 0;
+	this.cursize = 1;
+	this.curopyacity = 1;
+	this.speed = 0.4;
+
 };
 
 endpart.prototype.play = function() {
+	endp.style.display = 'block';
 	if (this.curangle <= 25) {
 		this.curangle = this.curangle + this.speed;
 		maindiv.style.transform = 'rotate(' + String(this.curangle) + 'deg) ' + 'scale(' + String(this.cursize) + ')';
@@ -548,11 +562,35 @@ var islegal = function(i) {
 };
 
 
-var resetGame = function() {};
+var resetGame = function() {
+	score = 0;
+	changeflag = true;
+	mainend.setData();
+	mainstart.setData();
+	ob_ctx.clearRect(0, 0, ob.width, ob.height);
+	maindiv.style.transform = '';
+	maindiv.style.opacity = 1;
+	count.style.opacity = 0;
+	stageflag = 0;
+	mainball.x = 1;
+	mainball.y = 1;
+	mainball.clear();
+	mainball.setBall();
+	mainball.draw();
+	mainfruit.x = 0;
+	mainfruit.y = 0;
+	mainfruit.clear();
+	mainfruit.setData();
+	mainfruit.draw();
+	endp.style.opacity = 0;
+	endp.style.display = 'none';
+	select = [];
+	active = 0;
+};
+
+
 
 getData();
-
-
 
 var mainball = new ball();
 mainball.draw();
@@ -573,6 +611,10 @@ var handler_size = function(event) {
 	mainfruit.setData();
 	mainfruit.draw();
 	//console.log(window.innerWidth,board_size);
+};
+
+var handler_click = function(event) {
+	resetGame();
 };
 
 var handler_ball = function(event) {
@@ -599,8 +641,44 @@ var handler_ball = function(event) {
 	}
 };
 
+maindiv.addEventListener('touchstart', function(e) {
+	e.preventDefault();
+	startX = e.touches[0].pageX;
+	startY = e.touches[0].pageY;
+	console.log(startX, startY);
+});
+
+maindiv.addEventListener('touchmove', function(e) {
+	e.preventDefault();
+	endX = e.changedTouches[0].pageX;
+	endY = e.changedTouches[0].pageY;
+	X = endX - startX;
+	Y = endY - startY;
+});
+maindiv.addEventListener('touchend', function(e) {
+	e.preventDefault();
+	if (stageflag === 0) {
+		stageflag = 1;
+		mainstart.disappear();
+		count.style.opacity = 1;
+	}
+
+	if (Math.abs(X) > Math.abs(Y) && X > 0) {
+		mainball.update(0, 1);
+	} else if (Math.abs(X) > Math.abs(Y) && X < 0) {
+		mainball.update(0, -1);
+	} else if (Math.abs(Y) > Math.abs(X) && Y > 0) {
+		mainball.update(1, 0);
+	} else if (Math.abs(Y) > Math.abs(X) && Y < 0) {
+		mainball.update(-1, 0);
+	} else {
+		return;
+	}
+});
+
 window.onresize = handler_size;
 window.onkeydown = handler_ball;
+endp.onclick = handler_click;
 
 var changeflag = true;
 

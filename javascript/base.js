@@ -175,7 +175,6 @@ fruit.prototype = {
 			this.index = Math.floor(Math.random() * 9);
 		} while (this.index === this.last);
 		this.setData();
-		this.draw();
 	},
 
 	rotate: function() {
@@ -243,8 +242,8 @@ obstacle.prototype = {
 	},
 
 	fastMove: function() {
-		this.r = this.r + this.speedx * 1.5;
-		this.c = this.c + this.speedy * 1.5;
+		this.r = this.r + this.speedx * 2;
+		this.c = this.c + this.speedy * 2;
 		this.draw();
 		this.active = this.isactive();
 	}
@@ -289,11 +288,15 @@ level.prototype.play = function() {
 	return;
 };
 
-var changelevel = function() {
+var changelevel = function(t) {
 	ob_ctx.clearRect(0, 0, ob.width, ob.height);
 	if (select.length > 0) {
 		select.forEach(function(item, index) {
-			obBall[item].move();
+			if (t) {
+				obBall[item].move();
+			} else {
+				obBall[item].fastMove();
+			}
 			if (!obBall[item].isselected()) {
 				select.splice(index, 1);
 			}
@@ -333,6 +336,28 @@ var remainBall = function(stage) {
 			break;
 
 		case 1:
+			while (select.length < amount) {
+				let index = Math.floor(Math.random() * 12);
+				if (!select.contains(index)) {
+					obBall[index].active = 1;
+					select.push(index);
+				}
+			}
+			active = 0;
+			select.forEach(function(item, index) {
+				obBall[item].fastMove();
+				if (!obBall[item].isselected()) {
+					select.splice(index, 1);
+				}
+				if (!islegal(item)) {
+					stageflag = 2;
+					mainend.setData(mainball.r, mainball.c);
+				}
+			});
+			break;
+
+
+		case 2:
 			while (active < amount) {
 				let index = Math.floor(Math.random() * 12);
 				obBall[index].active = 1;
@@ -356,26 +381,6 @@ var remainBall = function(stage) {
 			});
 			break;
 
-		case 2:
-			while (select.length < amount) {
-				let index = Math.floor(Math.random() * 12);
-				if (!select.contains(index)) {
-					obBall[index].active = 1;
-					select.push(index);
-				}
-			}
-			active = 0;
-			select.forEach(function(item, index) {
-				obBall[item].fastMove();
-				if (!obBall[item].isselected()) {
-					select.splice(index, 1);
-				}
-				if (!islegal(item)) {
-					stageflag = 2;
-					mainend.setData(mainball.r, mainball.c);
-				}
-			});
-			break;
 
 		case 3:
 			while (active < amount) {
@@ -457,6 +462,7 @@ endpart.prototype.play = function() {
 	if (this.curopyacity >= 0.4) {
 		this.curopyacity = this.curopyacity - this.speed / 70;
 		maindiv.style.opacity = this.curopyacity;
+		endp.style.opacity = 1 - this.curopyacity;
 	}
 	return;
 
@@ -477,6 +483,14 @@ var init_board = function(board, board_context) {
 	myfruit.height = window.innerHeight;
 	ob.width = window.innerWidth;
 	ob.height = window.innerHeight;
+	mylevel.style.top = startp.style.top = String(offtop / 3) + 'px';
+	mylevel.style.fontSize = startp.style.fontSize = String(board_size / 5) + 'px';
+	count.style.top = offtop / 3;
+	count.style.left = String(offleft / 3) + 'px';
+	count.style.fontSize = board_size / 3 * 2;
+	endp.style.width = String(board_size * 2) + 'px';
+	endp.style.height = String(board_size / 3) + 'px';
+	endp.style.fontSize = String(board_size / 3) + 'px';
 
 	board_context.lineWidth = boardLineWidth;
 	board_context.strokeStyle = '#fde6d8';
@@ -534,6 +548,7 @@ var islegal = function(i) {
 };
 
 
+var resetGame = function() {};
 
 getData();
 
@@ -554,6 +569,7 @@ var handler_size = function(event) {
 	mainball.clear();
 	mainball.setBall();
 	mainball.draw();
+	mainfruit.clear();
 	mainfruit.setData();
 	mainfruit.draw();
 	//console.log(window.innerWidth,board_size);
@@ -563,6 +579,7 @@ var handler_ball = function(event) {
 	if (stageflag === 0) {
 		stageflag = 1;
 		mainstart.disappear();
+		count.style.opacity = 1;
 	}
 	switch (event.keyCode) {
 		case 38:
@@ -610,9 +627,9 @@ var main = function() {
 			mainend.play();
 			break;
 		case 3:
+			mainfruit.clear();
 			mainball.move();
-			mainfruit.rotate();
-			changelevel();
+			changelevel(Math.floor(score / 10) % 2);
 			break;
 	}
 	count.textContent = score;

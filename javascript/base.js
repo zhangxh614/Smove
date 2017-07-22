@@ -254,6 +254,10 @@ var remainBall = function(stage) {
 				if (!obBall[item].isselected()) {
 					select.splice(index, 1);
 				}
+				if (!islegal(item)) {
+					score=0;
+					console.log('fail');
+				}
 			});
 			break;
 		case 3:
@@ -342,6 +346,15 @@ var getData = function() {
 		obBall.push(tmp);
 	}
 };
+
+var islegal = function(i) {
+	if (Math.abs(mainball.r + offleft - obBall[i].r) < radius + largeradius && Math.abs(mainball.c + offtop - obBall[i].c) < radius + largeradius) {
+		return false;
+	}
+	return true;
+};
+
+
 
 getData();
 

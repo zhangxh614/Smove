@@ -11,7 +11,7 @@ var offtop = 0;
 var ballspeed = 0;
 var board_size = 0;
 var obBall = [];
-var stageflag = 0; //0:start 1:during 2:end
+var stageflag = 0; //0:start 1:during 2:end 3:changelevel
 
 
 var maindiv = document.getElementById('main');
@@ -31,6 +31,8 @@ var ob_ctx = ob.getContext('2d');
 
 var startp = document.getElementById('start');
 var endp = document.getElementById('end');
+var mylevel = document.getElementById('level');
+
 
 
 CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
@@ -238,19 +240,80 @@ obstacle.prototype = {
 		this.c = this.c + this.speedy;
 		this.draw();
 		this.active = this.isactive();
+	},
+
+	fastMove: function() {
+		this.r = this.r + this.speedx * 1.5;
+		this.c = this.c + this.speedy * 1.5;
+		this.draw();
+		this.active = this.isactive();
 	}
+
 };
+
 
 
 var amount = 2;
 var select = [];
 var active = 0;
+var method = [
+	[
+		[0, 5],
+		[1, 4],
+		[2, 3]
+	],
+	[
+		[6, 11],
+		[8, 9],
+		[10, 7]
+	]
+];
+
+var level = function() {
+	this.curopyacity = 0;
+	this.speed = 0.01;
+};
+
+level.prototype.play = function() {
+	if (stageflag === 3) {
+		this.curopyacity = this.curopyacity + this.speed;
+		if (this.curopyacity > 1) {
+			this.speed = -this.speed;
+		} else if (this.curopyacity <= 0) {
+			stageflag = 1;
+			this.curopyacity = 0;
+			this.speed = 0.01;
+		}
+		mylevel.style.opacity = this.curopyacity;
+	}
+	return;
+};
+
+var changelevel = function() {
+	ob_ctx.clearRect(0, 0, ob.width, ob.height);
+	if (select.length > 0) {
+		select.forEach(function(item, index) {
+			obBall[item].move();
+			if (!obBall[item].isselected()) {
+				select.splice(index, 1);
+			}
+			if (!islegal(item)) {
+				stageflag = 2;
+				mainend.setData(mainball.r, mainball.c);
+			}
+		});
+	}
+
+	mainlevel.play();
+
+};
+
 var remainBall = function(stage) {
 	ob_ctx.clearRect(0, 0, ob.width, ob.height);
 	switch (stage) {
 		case 0:
 			while (select.length < amount) {
-				var index = Math.floor(Math.random() * 12);
+				let index = Math.floor(Math.random() * 12);
 				if (!select.contains(index)) {
 					obBall[index].active = 1;
 					select.push(index);
@@ -268,9 +331,10 @@ var remainBall = function(stage) {
 				}
 			});
 			break;
-		case 3:
+
+		case 1:
 			while (active < amount) {
-				var index = Math.floor(Math.random() * 12);
+				let index = Math.floor(Math.random() * 12);
 				obBall[index].active = 1;
 				active++;
 				select.push(index);
@@ -284,8 +348,59 @@ var remainBall = function(stage) {
 				if (obBall[item].active) {
 					active++;
 				}
+				if (!islegal(item)) {
+					stageflag = 2;
+					mainend.setData(mainball.r, mainball.c);
+				}
+
 			});
 			break;
+
+		case 2:
+			while (select.length < amount) {
+				let index = Math.floor(Math.random() * 12);
+				if (!select.contains(index)) {
+					obBall[index].active = 1;
+					select.push(index);
+				}
+			}
+			active = 0;
+			select.forEach(function(item, index) {
+				obBall[item].fastMove();
+				if (!obBall[item].isselected()) {
+					select.splice(index, 1);
+				}
+				if (!islegal(item)) {
+					stageflag = 2;
+					mainend.setData(mainball.r, mainball.c);
+				}
+			});
+			break;
+
+		case 3:
+			while (active < amount) {
+				let index = Math.floor(Math.random() * 12);
+				obBall[index].active = 1;
+				active++;
+				select.push(index);
+			}
+			active = 0;
+			select.forEach(function(item, index) {
+				obBall[item].fastMove();
+				if (!obBall[item].isselected()) {
+					select.splice(index, 1);
+				}
+				if (obBall[item].active) {
+					active++;
+				}
+				if (!islegal(item)) {
+					stageflag = 2;
+					mainend.setData(mainball.r, mainball.c);
+				}
+
+			});
+			break;
+
 
 		default:
 			break;
@@ -301,7 +416,7 @@ var startpart = function() {
 
 startpart.prototype.play = function() {
 	this.cur = this.cur + this.speed;
-	if (this.cur <= 0.3 || this.cur >= 1) {
+	if (this.cur <= 0.2 || this.cur >= 1) {
 		this.speed = -this.speed;
 	}
 	startp.style.opacity = this.cur;
@@ -430,6 +545,7 @@ var mainfruit = new fruit();
 mainfruit.draw();
 var mainstart = new startpart();
 var mainend = new endpart();
+var mainlevel = new level();
 
 
 
@@ -438,7 +554,6 @@ var handler_size = function(event) {
 	mainball.clear();
 	mainball.setBall();
 	mainball.draw();
-	mainfruit.clear();
 	mainfruit.setData();
 	mainfruit.draw();
 	//console.log(window.innerWidth,board_size);
@@ -470,25 +585,34 @@ var handler_ball = function(event) {
 window.onresize = handler_size;
 window.onkeydown = handler_ball;
 
-
+var changeflag = true;
 
 var main = function() {
+	if (score % 10 === 0 && score !== 0 && changeflag) {
+		stageflag = 3;
+		changeflag = false;
+	}
 	switch (stageflag) {
 		case 0:
 			mainstart.play();
-			mainfruit.rotate();
 			break;
 		case 1:
 			mainball.move();
 			mainfruit.rotate();
-			remainBall(0);
+			remainBall(Math.floor(score / 10) % 4);
 			if (mainball.r === mainfruit.r && mainball.c === mainfruit.c) {
 				mainfruit.generate();
 				score++;
+				changeflag = true;
 			}
 			break;
 		case 2:
 			mainend.play();
+			break;
+		case 3:
+			mainball.move();
+			mainfruit.rotate();
+			changelevel();
 			break;
 	}
 	count.textContent = score;

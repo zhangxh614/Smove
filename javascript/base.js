@@ -11,6 +11,7 @@ var offtop = 0;
 var ballspeed = 0;
 var board_size = 0;
 var obBall = [];
+var stageflag = 0; //0:start 1:during 2:end
 
 
 var main = document.getElementById('main');
@@ -27,6 +28,9 @@ var fruit_ctx = myfruit.getContext('2d');
 
 var ob = document.getElementById('obstacle');
 var ob_ctx = ob.getContext('2d');
+
+var startp = document.getElementById('start');
+var endp = document.getElementById('end');
 
 
 CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
@@ -228,15 +232,9 @@ obstacle.prototype = {
 		this.active = this.isactive();
 	}
 };
-var getSum = function() {
-	let res = 0;
-	obBall.forEach(function(item, index) {
-		res += item.active;
-	});
-	return res;
-};
 
-var amount = 1;
+
+var amount = 2;
 var select = [];
 var active = 0;
 var remainBall = function(stage) {
@@ -255,7 +253,7 @@ var remainBall = function(stage) {
 					select.splice(index, 1);
 				}
 				if (!islegal(item)) {
-					score=0;
+					score = 0;
 					console.log('fail');
 				}
 			});
@@ -285,7 +283,28 @@ var remainBall = function(stage) {
 };
 
 
-init_board = function(board, board_context) {
+
+var startpart = function() {
+	this.speed = 0.02;
+	this.cur = 0.5;
+
+};
+
+startpart.prototype.play = function() {
+	this.cur = this.cur + this.speed;
+	if (this.cur <= 0.3 || this.cur >= 1) {
+		this.speed = -this.speed;
+	}
+	startp.style.opacity = this.cur;
+};
+
+startpart.prototype.disappear = function() {
+	this.cur = 0;
+	startp.style.opacity = this.cur;
+};
+
+
+var init_board = function(board, board_context) {
 	var board_size = window.innerWidth > window.innerHeight ? window.innerHeight / 3 : window.innerWidth / 3;
 	offleft = (window.innerWidth - board_size) / 2;
 	offtop = (window.innerHeight - board_size) / 2;
@@ -364,6 +383,7 @@ var mainball = new ball();
 mainball.draw();
 var mainfruit = new fruit();
 mainfruit.draw();
+var mainstart = new startpart();
 
 
 
@@ -379,6 +399,10 @@ var handler_size = function(event) {
 };
 
 var handler_ball = function(event) {
+	if (stageflag === 0) {
+		stageflag = 1;
+		mainstart.disappear();
+	}
 	switch (event.keyCode) {
 		case 38:
 			mainball.update(-1, 0);
@@ -403,12 +427,21 @@ window.onkeydown = handler_ball;
 
 
 var main = function() {
-	mainball.move();
-	mainfruit.rotate();
-	remainBall(0);
-	if (mainball.r === mainfruit.r && mainball.c === mainfruit.c) {
-		mainfruit.generate();
-		score++;
+	switch (stageflag) {
+		case 0:
+			mainstart.play();
+			break;
+		case 1:
+			mainball.move();
+			mainfruit.rotate();
+			remainBall(0);
+			if (mainball.r === mainfruit.r && mainball.c === mainfruit.c) {
+				mainfruit.generate();
+				score++;
+			}
+			break;
+		case 2:
+			break;
 	}
 	count.textContent = score;
 };

@@ -568,7 +568,6 @@ var islegal = function(i) {
 
 
 var resetGame = function() {
-	getData();
 	score = 0;
 	changeflag = true;
 	mainend.setData();
@@ -592,6 +591,12 @@ var resetGame = function() {
 	endp.style.display = 'none';
 	select = [];
 	active = 0;
+	obBall = [];
+	for (var i = 0; i < 12; i++) {
+		var tmp = new obstacle(i);
+		obBall.push(tmp);
+	}
+
 };
 
 

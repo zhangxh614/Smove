@@ -160,7 +160,12 @@ fruit.prototype = {
 
 	draw: function() {
 		fruit_ctx.drawBoard(this.r - this.size, this.c - this.size, this.size * 2, this.size / 2);
-		fruit_ctx.fillStyle = "#175fa4";
+		if (score % 10 === 9) {
+			fruit_ctx.fillStyle = "yellow";
+		} else {
+			fruit_ctx.fillStyle = "#175fa4";
+		}
+
 		fruit_ctx.fill();
 
 	},
@@ -563,6 +568,7 @@ var islegal = function(i) {
 
 
 var resetGame = function() {
+	getData();
 	score = 0;
 	changeflag = true;
 	mainend.setData();

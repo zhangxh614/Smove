@@ -39,6 +39,9 @@ var startp = document.getElementById('start');
 var endp = document.getElementById('end');
 var mylevel = document.getElementById('level');
 
+var mainwidth = maindiv.offsetWidth;
+var mainheight = maindiv.offsetHeight;
+
 
 
 CanvasRenderingContext2D.prototype.drawBoard = function(x, y, size, r) {
@@ -490,18 +493,18 @@ endpart.prototype.play = function() {
 
 
 var init_board = function(board, board_context) {
-	var board_size = window.innerWidth > window.innerHeight ? window.innerHeight / 3 : window.innerWidth / 3;
-	offleft = (window.innerWidth - board_size) / 2;
-	offtop = (window.innerHeight - board_size) / 2;
+	var board_size = mainwidth > mainheight ? mainheight / 3 : mainwidth / 3;
+	offleft = (mainwidth - board_size) / 2;
+	offtop = (mainheight - board_size) / 2;
 	//console.log(offleft, offtop);
-	board.width = window.innerWidth;
-	board.height = window.innerHeight;
-	myball.width = window.innerWidth;
-	myball.height = window.innerHeight;
-	myfruit.width = window.innerWidth;
-	myfruit.height = window.innerHeight;
-	ob.width = window.innerWidth;
-	ob.height = window.innerHeight;
+	board.width = mainwidth;
+	board.height = mainheight;
+	myball.width = mainwidth;
+	myball.height = mainheight;
+	myfruit.width = mainwidth;
+	myfruit.height = mainheight;
+	ob.width = mainwidth;
+	ob.height = mainheight;
 	mylevel.style.top = startp.style.top = String(offtop / 3) + 'px';
 	mylevel.style.fontSize = startp.style.fontSize = String(board_size / 5) + 'px';
 	count.style.top = offtop / 3;
@@ -510,6 +513,9 @@ var init_board = function(board, board_context) {
 	endp.style.width = String(board_size * 2) + 'px';
 	endp.style.height = String(board_size / 3) + 'px';
 	endp.style.fontSize = String(board_size / 3) + 'px';
+
+	boardLineWidth=board_size/30;
+	midLineWidth=board_size/50;
 
 	board_context.lineWidth = boardLineWidth;
 	board_context.strokeStyle = '#fde6d8';
@@ -524,6 +530,8 @@ var init_board = function(board, board_context) {
 };
 
 var getData = function() {
+	mainwidth = maindiv.offsetWidth;
+	mainheight = maindiv.offsetHeight;
 	board_size = init_board(board, board_context);
 	var block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
 	radius = block_size / 3;
@@ -621,7 +629,7 @@ var handler_size = function(event) {
 	mainfruit.clear();
 	mainfruit.setData();
 	mainfruit.draw();
-	//console.log(window.innerWidth,board_size);
+	//console.log(mainwidth,board_size);
 };
 
 var handler_click = function(event) {

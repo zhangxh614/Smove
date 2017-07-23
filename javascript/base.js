@@ -664,7 +664,7 @@ maindiv.addEventListener('touchstart', function(e) {
 	e.preventDefault();
 	startX = e.touches[0].pageX;
 	startY = e.touches[0].pageY;
-	console.log(startX, startY);
+	//console.log(startX, startY);
 });
 
 maindiv.addEventListener('touchmove', function(e) {

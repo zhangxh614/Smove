@@ -39,8 +39,8 @@ var startp = document.getElementById('start');
 var endp = document.getElementById('end');
 var mylevel = document.getElementById('level');
 
-var mainwidth = maindiv.offsetWidth;
-var mainheight = maindiv.offsetHeight;
+var mainwidth = maindiv.clientWidth;
+var mainheight = maindiv.clientHeight;
 
 
 
@@ -530,8 +530,8 @@ var init_board = function(board, board_context) {
 };
 
 var getData = function() {
-	mainwidth = maindiv.offsetWidth;
-	mainheight = maindiv.offsetHeight;
+	mainwidth = maindiv.clientWidth;
+	mainheight = maindiv.clientHeight;
 	board_size = init_board(board, board_context);
 	var block_size = (board_size - 2 * boardLineWidth - 2 * midLineWidth) / 3;
 	radius = block_size / 3;

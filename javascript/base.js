@@ -84,7 +84,7 @@ var ball = function(x = 1, y = 1) {
 	this.y = y;
 	this.final_r = this.r = boardPosition[this.x * 3 + this.y][0];
 	this.final_c = this.c = boardPosition[this.x * 3 + this.y][1];
-	this.speed = speed;
+	this.speed = speed * 3;
 };
 
 ball.prototype = {
@@ -514,8 +514,8 @@ var init_board = function(board, board_context) {
 	endp.style.height = String(board_size / 3) + 'px';
 	endp.style.fontSize = String(board_size / 3) + 'px';
 
-	boardLineWidth=board_size/30;
-	midLineWidth=board_size/50;
+	boardLineWidth = board_size / 30;
+	midLineWidth = board_size / 50;
 
 	board_context.lineWidth = boardLineWidth;
 	board_context.strokeStyle = '#fde6d8';

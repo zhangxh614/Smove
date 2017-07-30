@@ -43,21 +43,29 @@ body {
 
 #board {
         position: absolute;
+	top:0;
+	left:0;
         z-index: 5;
 }
 
 #ball {
         position: absolute;
+	top:0;
+	left:0;
         z-index: 10;
 }
 
 #obstacle {
         position: absolute;
+	top:0;
+	left:0;
         z-index: 15;
 }
 
 #fruit {
         position: absolute;
+	top:0;
+	left:0;
         z-index: 8;
 }
 

@@ -350,28 +350,6 @@ var remainBall = function(stage) {
 			break;
 
 		case 1:
-			while (select.length < amount) {
-				let index = Math.floor(Math.random() * 12);
-				if (!select.contains(index)) {
-					obBall[index].active = 1;
-					select.push(index);
-				}
-			}
-			active = 0;
-			select.forEach(function(item, index) {
-				obBall[item].fastMove();
-				if (!obBall[item].isselected()) {
-					select.splice(index, 1);
-				}
-				if (!islegal(item)) {
-					stageflag = 2;
-					mainend.setData(mainball.r, mainball.c);
-				}
-			});
-			break;
-
-
-		case 2:
 			while (active < amount) {
 				let index = Math.floor(Math.random() * 12);
 				obBall[index].active = 1;
@@ -392,6 +370,28 @@ var remainBall = function(stage) {
 					mainend.setData(mainball.r, mainball.c);
 				}
 
+			});
+			break;
+
+
+		case 2:
+			while (select.length < amount) {
+				let index = Math.floor(Math.random() * 12);
+				if (!select.contains(index)) {
+					obBall[index].active = 1;
+					select.push(index);
+				}
+			}
+			active = 0;
+			select.forEach(function(item, index) {
+				obBall[item].fastMove();
+				if (!obBall[item].isselected()) {
+					select.splice(index, 1);
+				}
+				if (!islegal(item)) {
+					stageflag = 2;
+					mainend.setData(mainball.r, mainball.c);
+				}
 			});
 			break;
 

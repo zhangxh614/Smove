@@ -505,8 +505,10 @@ var init_board = function(board, board_context) {
 	myfruit.height = mainheight;
 	ob.width = mainwidth;
 	ob.height = mainheight;
-	mylevel.style.top = startp.style.top = String(offtop / 3) + 'px';
-	mylevel.style.fontSize = startp.style.fontSize = String(board_size / 5) + 'px';
+	mylevel.style.top = String(offtop / 3) + 'px';
+	startp.style.top = String(offtop / 3) + 'px';
+	mylevel.style.fontSize = String(board_size / 5) + 'px';
+	startp.style.fontSize = String(board_size / 5) + 'px';
 	count.style.top = offtop / 3;
 	count.style.left = String(offleft / 3) + 'px';
 	count.style.fontSize = board_size / 3 * 2;
